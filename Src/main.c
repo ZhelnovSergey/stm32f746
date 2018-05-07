@@ -18,6 +18,7 @@ void fmc_sdram_init             (void);
 
 void usart_init                 (void);
 
+ 
 uint8_t     g_frame_buffer      [200][1504]; //[200][1504];
 
 uint32_t    g_frame_cnt         = 0;
@@ -28,11 +29,29 @@ int main(void)
 {
     HAL_Init();
 
-    SystemClock_Config();
+    SystemClock_Config();        
 
-    ports_init();
-    dma_dcmi_init();
+
+    
+    ports_init      ();
+    fmc_sdram_init  ();
+    
+    unsigned int*   pData = 0xD0000000;
+    unsigned int    Data  = 0;
+    
+    *pData = 1;
+    Data  = *pData;
+    
+    
+    
+    while(1);
+    
+    
+    
+    
+    dma_dcmi_init   ();
     dcmi_fcb_ex48ep_init();
+    
 
     // for ov7725
     //tim4_ch4_pwm_init(10, 10);
@@ -75,17 +94,18 @@ int main(void)
     }
 }
 
-void ports_init(void)
+ void ports_init(void)
 {
-    // GPIO: A B C D E F G H
+    // GPIO: A B C D E F G H I
     RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
     RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN;
     RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN;
     RCC->AHB1ENR |= RCC_AHB1ENR_GPIODEN;
     RCC->AHB1ENR |= RCC_AHB1ENR_GPIOEEN;
     RCC->AHB1ENR |= RCC_AHB1ENR_GPIOFEN;
-    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOHEN;
     RCC->AHB1ENR |= RCC_AHB1ENR_GPIOGEN;
+    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOHEN;    
+    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOIEN;
 
 
 
@@ -103,12 +123,8 @@ void ports_init(void)
 
 
     // Mode                 : Alternate function
-    GPIOB->MODER    &= ~(GPIO_MODER_MODER5   | GPIO_MODER_MODER7   | GPIO_MODER_MODER8   | GPIO_MODER_MODER9  );
-    GPIOB->MODER    |=  (GPIO_MODER_MODER5_1 | GPIO_MODER_MODER7_1 | GPIO_MODER_MODER8_1 | GPIO_MODER_MODER9_1);
-
-    // Alternate function   : 
-    GPIOB->AFR[ 0 ] &= ~0x00F00000; // PB5  - FMC_SDCKE1
-    GPIOB->AFR[ 0 ] |=  0x00C00000;
+    GPIOB->MODER    &= ~(GPIO_MODER_MODER7   | GPIO_MODER_MODER8   | GPIO_MODER_MODER9  );
+    GPIOB->MODER    |=  (GPIO_MODER_MODER7_1 | GPIO_MODER_MODER8_1 | GPIO_MODER_MODER9_1);
     
     GPIOB->AFR[ 0 ] &= ~0xF0000000; // PB7  - DCMI_VSYNC
     GPIOB->AFR[ 0 ] |=  0xD0000000;
@@ -122,15 +138,10 @@ void ports_init(void)
 
 
     // Mode                 : Alternate function
-    GPIOC->MODER   &= ~(GPIO_MODER_MODER2   | GPIO_MODER_MODER3   | GPIO_MODER_MODER6   | GPIO_MODER_MODER7   | GPIO_MODER_MODER8   | GPIO_MODER_MODER9   | GPIO_MODER_MODER10   | GPIO_MODER_MODER12  );
-    GPIOC->MODER   |=  (GPIO_MODER_MODER2_1 | GPIO_MODER_MODER3_1 | GPIO_MODER_MODER6_1 | GPIO_MODER_MODER7_1 | GPIO_MODER_MODER8_1 | GPIO_MODER_MODER9_1 | GPIO_MODER_MODER10_1 | GPIO_MODER_MODER12_1);
+    GPIOC->MODER   &= ~(GPIO_MODER_MODER6   | GPIO_MODER_MODER7   | GPIO_MODER_MODER8   | GPIO_MODER_MODER9   | GPIO_MODER_MODER10   | GPIO_MODER_MODER12  );
+    GPIOC->MODER   |=  (GPIO_MODER_MODER6_1 | GPIO_MODER_MODER7_1 | GPIO_MODER_MODER8_1 | GPIO_MODER_MODER9_1 | GPIO_MODER_MODER10_1 | GPIO_MODER_MODER12_1);
 
     // Alternate function   :         
-    GPIOC->AFR[ 0 ] &= ~0x00000F00; // PC2  - FMC_SDNE0
-    GPIOC->AFR[ 0 ] |=  0x00000C00;
-        
-    GPIOC->AFR[ 0 ] &= ~0x0000F000; // PC3  - FMC_SDCKE0
-    GPIOC->AFR[ 0 ] |=  0x0000C000;
     
     GPIOC->AFR[ 0 ] &= ~0x0F000000; // PC6  - DCMI_D0
     GPIOC->AFR[ 0 ] |=  0x0D000000;
@@ -154,57 +165,100 @@ void ports_init(void)
 
 
     // Mode                 : Alternate function
-    GPIOD->MODER    &= ~(GPIO_MODER_MODER0   | GPIO_MODER_MODER1   | GPIO_MODER_MODER3   | GPIO_MODER_MODER14   | GPIO_MODER_MODER15);
-    GPIOD->MODER    |=  (GPIO_MODER_MODER0_1 | GPIO_MODER_MODER1_1 | GPIO_MODER_MODER3_1 | GPIO_MODER_MODER14_1 | GPIO_MODER_MODER15_1);
+    GPIOD->MODER    &= ~(GPIO_MODER_MODER0   | GPIO_MODER_MODER1   | GPIO_MODER_MODER3   | GPIO_MODER_MODER8   | GPIO_MODER_MODER9   | GPIO_MODER_MODER10   | GPIO_MODER_MODER14   | GPIO_MODER_MODER15);
+    GPIOD->MODER    |=  (GPIO_MODER_MODER0_1 | GPIO_MODER_MODER1_1 | GPIO_MODER_MODER3_1 | GPIO_MODER_MODER8_1 | GPIO_MODER_MODER9_1 | GPIO_MODER_MODER10_1 | GPIO_MODER_MODER14_1 | GPIO_MODER_MODER15_1);
+        
 
     // Alternate function   : 
     GPIOD->AFR[ 0 ] &= ~0x0000000F; // PD0  - FMC_D2
-    GPIOD->AFR[ 0 ] |=  0x0000000D;
+    GPIOD->AFR[ 0 ] |=  0x0000000C;
     
     // Alternate function   : 
     GPIOD->AFR[ 0 ] &= ~0x000000F0; // PD1  - FMC_D3
-    GPIOD->AFR[ 0 ] |=  0x000000DD;
+    GPIOD->AFR[ 0 ] |=  0x000000C0;
     
     // Alternate function   : 
     GPIOD->AFR[ 0 ] &= ~0x0000F000; // PD3  - DCMI_D5
     GPIOD->AFR[ 0 ] |=  0x0000D000;
 
     // Alternate function   : 
+    GPIOD->AFR[ 1 ] &= ~0x0000000F; // PD8  - FMC_D13
+    GPIOD->AFR[ 1 ] |=  0x0000000C;
+    
+    // Alternate function   : 
+    GPIOD->AFR[ 1 ] &= ~0x000000F0; // PD9  - FMC_D14
+    GPIOD->AFR[ 1 ] |=  0x000000C0;
+    
+    // Alternate function   : 
+    GPIOD->AFR[ 1 ] &= ~0x00000F00; // PD10 - FMC_D15
+    GPIOD->AFR[ 1 ] |=  0x00000C00;    
+    
+    // Alternate function   : 
     GPIOD->AFR[ 1 ] &= ~0x0F000000; // PD14 - FMC_D0
-    GPIOD->AFR[ 1 ] |=  0x0D000000;
+    GPIOD->AFR[ 1 ] |=  0x0C000000;
     
     // Alternate function   : 
     GPIOD->AFR[ 1 ] &= ~0xF0000000; // PD15 - FMC_D1
-    GPIOD->AFR[ 1 ] |=  0xD0000000;
+    GPIOD->AFR[ 1 ] |=  0xC0000000;
     
 
     
     
     // Mode                 : Alternate function
-    GPIOE->MODER    &= ~(GPIO_MODER_MODER7  | GPIO_MODER_MODER11   );
-    GPIOE->MODER    |=  (GPIO_MODER_MODER7_1| GPIO_MODER_MODER11_1 );
+    GPIOE->MODER    &= ~(GPIO_MODER_MODER0   | GPIO_MODER_MODER1   | GPIO_MODER_MODER7   |  GPIO_MODER_MODER8   | GPIO_MODER_MODER9  | GPIO_MODER_MODER10  | GPIO_MODER_MODER11   | GPIO_MODER_MODER12     );
+    GPIOE->MODER    |=  (GPIO_MODER_MODER0_1 | GPIO_MODER_MODER1_1 | GPIO_MODER_MODER7_1 |  GPIO_MODER_MODER8_1 | GPIO_MODER_MODER9_1| GPIO_MODER_MODER10_1| GPIO_MODER_MODER11_1 | GPIO_MODER_MODER12_1 );
+    
+    GPIOE->MODER    &= ~(GPIO_MODER_MODER13  | GPIO_MODER_MODER14  | GPIO_MODER_MODER15  );
+    GPIOE->MODER    |=  (GPIO_MODER_MODER13_1| GPIO_MODER_MODER14_1| GPIO_MODER_MODER15_1);
 
     // Alternate function   : 
+    GPIOE->AFR[ 0 ] &= ~0x0000000F;     // PE0  - FMC_NBL0
+    GPIOE->AFR[ 0 ] |=  0x0000000C;
+    
+    // Alternate function   : 
+    GPIOE->AFR[ 0 ] &= ~0x000000F0;     // PE1  - FMC_NBL1
+    GPIOE->AFR[ 0 ] |=  0x000000C0;
+    
+    // Alternate function   : 
     GPIOE->AFR[ 0 ] &= ~0xF0000000;     // PE7  - FMC_D4
-    GPIOE->AFR[ 0 ] |=  0xD0000000;
+    GPIOE->AFR[ 0 ] |=  0xC0000000;
         
     // Alternate function   : 
     GPIOE->AFR[ 1 ] &= ~0x0000000F;     // PE8  - FMC_D5
-    GPIOE->AFR[ 1 ] |=  0x0000000D;
+    GPIOE->AFR[ 1 ] |=  0x0000000C;
     
     // Alternate function   : 
-    GPIOE->AFR[ 1 ] &= ~0x0000000F;     // PE9  - FMC_D5
-    GPIOE->AFR[ 1 ] |=  0x0000000D;    
+    GPIOE->AFR[ 1 ] &= ~0x000000F0;     // PE9  - FMC_D6
+    GPIOE->AFR[ 1 ] |=  0x000000C0;    
     
     // Alternate function   : 
-    GPIOE->AFR[ 1 ] &= ~0x0000F000;     // PE11 - TIM1_CH2
-    GPIOE->AFR[ 1 ] |=  0x00001000;
+    GPIOE->AFR[ 1 ] &= ~0x00000F00;     // PE10 - FMC_D7
+    GPIOE->AFR[ 1 ] |=  0x00000C00;  
     
+    // Alternate function   : 
+    GPIOE->AFR[ 1 ] &= ~0x0000F000;     // PE11 - FMC_D8
+    GPIOE->AFR[ 1 ] |=  0x0000C000;
+    
+    // Alternate function   : 
+    GPIOE->AFR[ 1 ] &= ~0x000F0000;     // PE12 - FMC_D9
+    GPIOE->AFR[ 1 ] |=  0x000C0000;
+    
+    // Alternate function   : 
+    GPIOE->AFR[ 1 ] &= ~0x00F00000;     // PE13 - FMC_D10
+    GPIOE->AFR[ 1 ] |=  0x00C00000;    
+    
+    // Alternate function   : 
+    GPIOE->AFR[ 1 ] &= ~0x0F000000;     // PE14 - FMC_D11
+    GPIOE->AFR[ 1 ] |=  0x0C000000;
+    
+    // Alternate function   : 
+    GPIOE->AFR[ 1 ] &= ~0xF0000000;     // PE15 - FMC_D12
+    GPIOE->AFR[ 1 ] |=  0xC0000000; 
 
 
     // Mode                 : Alternate function
-    GPIOF->MODER   &= ~(GPIO_MODER_MODER0   | GPIO_MODER_MODER1   | GPIO_MODER_MODER2   | GPIO_MODER_MODER3   | GPIO_MODER_MODER4   | GPIO_MODER_MODER5   | GPIO_MODER_MODER12   );
-    GPIOF->MODER   |=  (GPIO_MODER_MODER0_1 | GPIO_MODER_MODER1_1 | GPIO_MODER_MODER2_1 | GPIO_MODER_MODER3_1 | GPIO_MODER_MODER4_1 | GPIO_MODER_MODER5_1 | GPIO_MODER_MODER12_1 );
+    GPIOF->MODER   &= ~(GPIO_MODER_MODER0   | GPIO_MODER_MODER1   | GPIO_MODER_MODER2   | GPIO_MODER_MODER3   | GPIO_MODER_MODER4   | GPIO_MODER_MODER5   | GPIO_MODER_MODER11   | GPIO_MODER_MODER12   );
+    GPIOF->MODER   |=  (GPIO_MODER_MODER0_1 | GPIO_MODER_MODER1_1 | GPIO_MODER_MODER2_1 | GPIO_MODER_MODER3_1 | GPIO_MODER_MODER4_1 | GPIO_MODER_MODER5_1 | GPIO_MODER_MODER11_1 | GPIO_MODER_MODER12_1 );
             
     GPIOF->MODER   &= ~(GPIO_MODER_MODER13  | GPIO_MODER_MODER14  | GPIO_MODER_MODER15  );
     GPIOF->MODER   |=  (GPIO_MODER_MODER13_1| GPIO_MODER_MODER14_1| GPIO_MODER_MODER15_1);                                    
@@ -227,6 +281,9 @@ void ports_init(void)
     
     GPIOF->AFR[ 0 ] &= ~0x00F00000; // PF5  - FMC_A5
     GPIOF->AFR[ 0 ] |=  0x00C00000;
+
+    GPIOF->AFR[ 1 ] &= ~0x0000F000; // PF11 - FMC_SDNRAS
+    GPIOF->AFR[ 1 ] |=  0x0000C000;
     
     GPIOF->AFR[ 1 ] &= ~0x000F0000; // PF12 - FMC_A6
     GPIOF->AFR[ 1 ] |=  0x000C0000;
@@ -249,8 +306,8 @@ void ports_init(void)
     
     
     // Mode                 : Alternate function
-    GPIOG->MODER    &= ~(GPIO_MODER_MODER0   | GPIO_MODER_MODER1   | GPIO_MODER_MODER2   | GPIO_MODER_MODER8   | GPIO_MODER_MODER9   | GPIO_MODER_MODER14    );
-    GPIOG->MODER    |=  (GPIO_MODER_MODER0_1 | GPIO_MODER_MODER1_1 | GPIO_MODER_MODER2_1 | GPIO_MODER_MODER8_1 | GPIO_MODER_MODER9_1 | GPIO_MODER_MODER14_1  );
+    GPIOG->MODER    &= ~(GPIO_MODER_MODER0   | GPIO_MODER_MODER1   | GPIO_MODER_MODER2   | GPIO_MODER_MODER8   | GPIO_MODER_MODER9   | GPIO_MODER_MODER14   | GPIO_MODER_MODER15    );
+    GPIOG->MODER    |=  (GPIO_MODER_MODER0_1 | GPIO_MODER_MODER1_1 | GPIO_MODER_MODER2_1 | GPIO_MODER_MODER8_1 | GPIO_MODER_MODER9_1 | GPIO_MODER_MODER14_1 | GPIO_MODER_MODER15_1  );
     
     // Alternate function   : 
     GPIOG->AFR[ 0 ] &= ~0x0000000F; // PG0  - FMC_A10
@@ -267,7 +324,7 @@ void ports_init(void)
     // Alternate function   : 
     GPIOG->AFR[ 1 ] &= ~0x0000000F; // PG8  - FMC_SDCLK
     GPIOG->AFR[ 1 ] |=  0x0000000C;
-    
+
     // Alternate function   : 
     GPIOG->AFR[ 1 ] &= ~0x000000F0; // PG9  - USART6_RX
     GPIOG->AFR[ 1 ] |=  0x00000080;
@@ -276,18 +333,45 @@ void ports_init(void)
     GPIOG->AFR[ 1 ] &= ~0x0F000000; // PG14 - USART6_TX
     GPIOG->AFR[ 1 ] |=  0x08000000;    
     
+    // Alternate function   : 
+    GPIOG->AFR[ 1 ] &= ~0xF0000000; // PG15 - FMC_SDNCAS
+    GPIOG->AFR[ 1 ] |=  0xC0000000;  
     
     
     // Mode                 : Alternate function
-    GPIOH->MODER    &= ~(GPIO_MODER_MODER6   | GPIO_MODER_MODER14);
-    GPIOH->MODER    |=  (GPIO_MODER_MODER6_1 | GPIO_MODER_MODER14_1);
+    GPIOH->MODER    &= ~(GPIO_MODER_MODER5   | GPIO_MODER_MODER6   | GPIO_MODER_MODER7   | GPIO_MODER_MODER14);
+    GPIOH->MODER    |=  (GPIO_MODER_MODER5_1 | GPIO_MODER_MODER6_1 | GPIO_MODER_MODER7_1 | GPIO_MODER_MODER14_1);
 
+    // Alternate function   : 
+    GPIOH->AFR[ 0 ] &= ~0x00F00000; // PH5  - FMC_SDNWE
+    GPIOH->AFR[ 0 ] |=  0x00C00000;
+    
     // Alternate function   : 
     GPIOH->AFR[ 0 ] &= ~0x0F000000; // PH6  - FMC_SDNE1
     GPIOH->AFR[ 0 ] |=  0x0C000000;
     
+        // Alternate function   : 
+    GPIOH->AFR[ 0 ] &= ~0xF0000000; // PH7  - FMC_SDCKE1
+    GPIOH->AFR[ 0 ] |=  0xC0000000;
+    
+    // Alternate function   :     
     GPIOH->AFR[ 1 ] &= ~0x0F000000; // PH14 - DCMI_D4
     GPIOH->AFR[ 1 ] |=  0x0D000000;
+    
+    
+    
+    // Mode                 : Alternate function
+    GPIOI->MODER    &= ~(GPIO_MODER_MODER4   | GPIO_MODER_MODER5   );
+    GPIOI->MODER    |=  (GPIO_MODER_MODER4_1 | GPIO_MODER_MODER5_1 );
+    
+    // Alternate function   : 
+    GPIOI->AFR[ 0 ] &= ~0x000F0000; // PI4  - FMC_NBL2
+    GPIOI->AFR[ 0 ] |=  0x000C0000;
+    
+    // Alternate function   : 
+    GPIOI->AFR[ 0 ] &= ~0x00F00000; // PI5  - FMC_NBL3
+    GPIOI->AFR[ 0 ] |=  0x00C00000;
+    
 }
 
 void dma_dcmi_init(void)
@@ -412,8 +496,133 @@ void dcmi_fcb_ex48ep_init(void)
 }
 
 
+
+// SDRAM: IC42S16400
+//
+// - Programmable CAS latency (2 and 3)
+
 void fmc_sdram_init(void)
 {
+    RCC->AHB3ENR |= RCC_AHB3ENR_FMCEN;
+    
+    
+    // SDRAM clock configuration
+    // These bits define the SDRAM clock period for both SDRAM banks and allow disabling the clock
+    // before changing the frequency. In this case the SDRAM must be re-initialized.
+    
+    FMC_Bank5_6->SDCR[0]  = 0x00000000;
+    FMC_Bank5_6->SDCR[1]  = 0x00000000;
+    
+    
+    FMC_Bank5_6->SDCR[0] |=  FMC_SDCR1_RPIPE_1;                 // One HCLK clock cycle delay
+    FMC_Bank5_6->SDCR[0] |=  FMC_SDCR1_RBURST;                  // Single read requests are not managed as bursts
+    FMC_Bank5_6->SDCR[0] |=  FMC_SDCR1_SDCLK_1;                 // SDCLK period = 2 x HCLK  106MHz  было вот так FMC_SDCR1_SDCLK_1
+        
+    // Bank_1
+    FMC_Bank5_6->SDCR[1] |=  FMC_SDCR2_NB;                      // Number of internal banks     : 4
+    FMC_Bank5_6->SDCR[1] |=  FMC_SDCR2_CAS_0 | FMC_SDCR2_CAS_1; // CAS                          : 3 cycles
+    FMC_Bank5_6->SDCR[1] |=  FMC_SDCR2_MWID_0;                  // Memory data width            : 16bit        
+    FMC_Bank5_6->SDCR[1] |=  FMC_SDCR2_NR_0;                    // Number of row address bit    : 12bit
+    FMC_Bank5_6->SDCR[1] &= ~FMC_SDCR2_NC;                      // Number of column address bit :  8bit
+    
+    
+    
+    FMC_Bank5_6->SDTR[0] = 0;
+    FMC_Bank5_6->SDTR[1] = 0;
+    
+    
+    // Trcd - RAS to CAS delay                        
+    // 20ns for 133MHz(-7)
+    // 20ns / 10ns ~= 2
+    FMC_Bank5_6->SDTR[1] &= ~FMC_SDTR2_TRCD;
+    FMC_Bank5_6->SDTR[1] |=  FMC_SDTR2_TRCD_0;
+    
+    
+    // Trp - time row precharge delay.
+    // 20ns for 133MHz(-7)
+    // 20ns / 10ns ~= 2
+    FMC_Bank5_6->SDTR[0] &= ~FMC_SDTR1_TRP;
+    FMC_Bank5_6->SDTR[0] |=  FMC_SDTR1_TRP_0;   // 0: 1 cycle
+                                                // 1: 2 cycle
+    
+    // Twr - Recovery delay between a Write and a Precharge    
+    FMC_Bank5_6->SDTR[1] &= ~FMC_SDTR2_TWR;
+    FMC_Bank5_6->SDTR[1] |=  FMC_SDTR2_TWR_0;   // 0: 1 cycle
+                                                // 1: 2 cycle
+            
+    // Trc - time row cycle     delay
+    // 67.5ns for 133MHz(-7)
+    // 67.5 / 10ns  = ~7 cycles
+    FMC_Bank5_6->SDTR[0] &= ~FMC_SDTR1_TRC;
+    FMC_Bank5_6->SDTR[0] |=  (7 - 1) << 12;
+    
+    
+    // Tras - self refresh period
+    // 64ns
+    // 64ns / 10ns  = ~7 cycles
+    FMC_Bank5_6->SDTR[1] &= ~FMC_SDTR2_TRAS;    // 0: 1 cycle
+    FMC_Bank5_6->SDTR[1] |= (7 - 1) << FMC_SDTR2_TRAS_Pos;
+    
+    
+    // Txsr - Exit Self-refresh delay
+    FMC_Bank5_6->SDTR[1] &= ~FMC_SDTR2_TXSR;     // 0: 1 cycle
+   
+   // Load Mode Register to Active
+    FMC_Bank5_6->SDTR[1] &= ~FMC_SDTR2_TMRD;     // 0: 1 cycle
+    
+    
+    
+    
+
+
+    // 3. Set MODE bits to ‘001’ and configure the Target Bank bits (CTB1 and/or CTB2) in the
+    // FMC_SDCMR register to start delivering the clock to the memory (SDCKE is driven high).
+    // Target bank 1
+    //FMC_Bank5_6->SDCMR   &= ~( FMC_SDCMR_MODE | FMC_SDCMR_CTB1 | FMC_SDCMR_CTB2);
+    FMC_Bank5_6->SDCMR   =  FMC_SDCMR_MODE_0 | FMC_SDCMR_CTB2 | (1 << 5);
+    
+    
+    // 4. Wait during the prescribed delay period. Typical delay is around 100 μs (refer to the
+    // SDRAM datasheet for the required delay after power-up).
+    // IC42S16400: Maintain stable power, table clock , and NOP input conditions for a minimum of 200us    
+    for(int i = 0;i < 250;i++)    
+        for(int j = 0;j < 300;j++);
+    
+    
+    
+    // 5. Set MODE bits to ‘010’ and configure the Target Bank bits (CTB1 and/or CTB2) in the
+    // FMC_SDCMR register to issue a “Precharge All” command.
+    //FMC_Bank5_6->SDCMR   &= ~( FMC_SDCMR_MODE | FMC_SDCMR_CTB1 | FMC_SDCMR_CTB2);
+    FMC_Bank5_6->SDCMR   =  FMC_SDCMR_MODE_1 | FMC_SDCMR_CTB2;
+    
+    
+    // 6. Set MODE bits to ‘011’, and configure the Target Bank bits (CTB1 and/or CTB2) as well
+    // as the number of consecutive Auto-refresh commands (NRFS) in the FMC_SDCMR
+    // register. Refer to the SDRAM datasheet for the number of Auto-refresh commands that
+    // should be issued. Typical number is 8
+    //FMC_Bank5_6->SDCMR   &= ~( FMC_SDCMR_MODE | FMC_SDCMR_CTB1 | FMC_SDCMR_CTB2 | FMC_SDCMR_NRFS);
+    //FMC_Bank5_6->SDCMR   |=   FMC_SDCMR_MODE_0 | FMC_SDCMR_MODE_1 | FMC_SDCMR_CTB2 | FMC_SDCMR_NRFS_3;
+    FMC_Bank5_6->SDCMR      =(8 << 5) /* NRFS */ | FMC_SDCMR_CTB2 | (3); // Autorefresh
+    
+    
+    
+    // 7. Configure the MRD field set the MODE bits to '100',
+    // and configure the Target Bank bits (CTB1 and/or CTB2) in the FMC_SDCMR register
+    // to issue a "Load Mode Register"
+            
+    // - the CAS latency must be selected   : 3
+    // - burst length must be selected to   : 1
+        
+    
+    FMC_Bank5_6->SDCMR   = ((3 << 4) << 9) | FMC_SDCMR_CTB2 | 4;
+           
+    // 8. Program the refresh rate in the FMC_SDRTR register
+    FMC_Bank5_6->SDRTR   = 2572;
+    
+    
+    
+    
+    
     
 }
 
