@@ -24,6 +24,17 @@ uint8_t     g_frame_buffer      [200][1504]; //[200][1504];
 uint32_t    g_frame_cnt         = 0;
 
 
+#define TMRD(x) (x << 0)
+#define TXSR(x) (x << 4)
+#define TRAS(x) (x << 8)
+#define TRC(x)  (x << 12)
+#define TWR(x)  (x << 16)
+#define TRP(x)  (x << 20)
+#define TRCD(x) (x << 24)
+
+
+// К этой плате нужно подключать USB питание 
+
 
 int main(void)
 {
@@ -205,12 +216,12 @@ int main(void)
     
     
     // Mode                 : Alternate function
-    GPIOE->MODER    &= ~(GPIO_MODER_MODER0   | GPIO_MODER_MODER1   | GPIO_MODER_MODER7   |  GPIO_MODER_MODER8   | GPIO_MODER_MODER9  | GPIO_MODER_MODER10  | GPIO_MODER_MODER11   | GPIO_MODER_MODER12     );
-    GPIOE->MODER    |=  (GPIO_MODER_MODER0_1 | GPIO_MODER_MODER1_1 | GPIO_MODER_MODER7_1 |  GPIO_MODER_MODER8_1 | GPIO_MODER_MODER9_1| GPIO_MODER_MODER10_1| GPIO_MODER_MODER11_1 | GPIO_MODER_MODER12_1 );
+    GPIOE->MODER    &= ~(/*GPIO_MODER_MODER0   | GPIO_MODER_MODER1   |*/ GPIO_MODER_MODER7   |  GPIO_MODER_MODER8   | GPIO_MODER_MODER9  | GPIO_MODER_MODER10  | GPIO_MODER_MODER11   | GPIO_MODER_MODER12     );
+    GPIOE->MODER    |=  (/*GPIO_MODER_MODER0_1 | GPIO_MODER_MODER1_1 |*/ GPIO_MODER_MODER7_1 |  GPIO_MODER_MODER8_1 | GPIO_MODER_MODER9_1| GPIO_MODER_MODER10_1| GPIO_MODER_MODER11_1 | GPIO_MODER_MODER12_1 );
     
     GPIOE->MODER    &= ~(GPIO_MODER_MODER13  | GPIO_MODER_MODER14  | GPIO_MODER_MODER15  );
     GPIOE->MODER    |=  (GPIO_MODER_MODER13_1| GPIO_MODER_MODER14_1| GPIO_MODER_MODER15_1);
-
+/*
     // Alternate function   : 
     GPIOE->AFR[ 0 ] &= ~0x0000000F;     // PE0  - FMC_NBL0
     GPIOE->AFR[ 0 ] |=  0x0000000C;
@@ -218,7 +229,7 @@ int main(void)
     // Alternate function   : 
     GPIOE->AFR[ 0 ] &= ~0x000000F0;     // PE1  - FMC_NBL1
     GPIOE->AFR[ 0 ] |=  0x000000C0;
-    
+*/    
     // Alternate function   : 
     GPIOE->AFR[ 0 ] &= ~0xF0000000;     // PE7  - FMC_D4
     GPIOE->AFR[ 0 ] |=  0xC0000000;
@@ -306,8 +317,8 @@ int main(void)
     
     
     // Mode                 : Alternate function
-    GPIOG->MODER    &= ~(GPIO_MODER_MODER0   | GPIO_MODER_MODER1   | GPIO_MODER_MODER2   | GPIO_MODER_MODER8   | GPIO_MODER_MODER9   | GPIO_MODER_MODER14   | GPIO_MODER_MODER15    );
-    GPIOG->MODER    |=  (GPIO_MODER_MODER0_1 | GPIO_MODER_MODER1_1 | GPIO_MODER_MODER2_1 | GPIO_MODER_MODER8_1 | GPIO_MODER_MODER9_1 | GPIO_MODER_MODER14_1 | GPIO_MODER_MODER15_1  );
+    GPIOG->MODER    &= ~(GPIO_MODER_MODER0   | GPIO_MODER_MODER1   | GPIO_MODER_MODER2   | GPIO_MODER_MODER8   | /*GPIO_MODER_MODER9   | GPIO_MODER_MODER14   |*/ GPIO_MODER_MODER15    );
+    GPIOG->MODER    |=  (GPIO_MODER_MODER0_1 | GPIO_MODER_MODER1_1 | GPIO_MODER_MODER2_1 | GPIO_MODER_MODER8_1 | /*GPIO_MODER_MODER9_1 | GPIO_MODER_MODER14_1 |*/ GPIO_MODER_MODER15_1  );
     
     // Alternate function   : 
     GPIOG->AFR[ 0 ] &= ~0x0000000F; // PG0  - FMC_A10
@@ -324,7 +335,12 @@ int main(void)
     // Alternate function   : 
     GPIOG->AFR[ 1 ] &= ~0x0000000F; // PG8  - FMC_SDCLK
     GPIOG->AFR[ 1 ] |=  0x0000000C;
-
+    
+    GPIOG->OSPEEDR  |=  0x00030000;
+    
+    
+    
+/*
     // Alternate function   : 
     GPIOG->AFR[ 1 ] &= ~0x000000F0; // PG9  - USART6_RX
     GPIOG->AFR[ 1 ] |=  0x00000080;
@@ -332,7 +348,7 @@ int main(void)
     // Alternate function   : 
     GPIOG->AFR[ 1 ] &= ~0x0F000000; // PG14 - USART6_TX
     GPIOG->AFR[ 1 ] |=  0x08000000;    
-    
+*/    
     // Alternate function   : 
     GPIOG->AFR[ 1 ] &= ~0xF0000000; // PG15 - FMC_SDNCAS
     GPIOG->AFR[ 1 ] |=  0xC0000000;  
@@ -359,7 +375,7 @@ int main(void)
     GPIOH->AFR[ 1 ] |=  0x0D000000;
     
     
-    
+/*    
     // Mode                 : Alternate function
     GPIOI->MODER    &= ~(GPIO_MODER_MODER4   | GPIO_MODER_MODER5   );
     GPIOI->MODER    |=  (GPIO_MODER_MODER4_1 | GPIO_MODER_MODER5_1 );
@@ -371,6 +387,7 @@ int main(void)
     // Alternate function   : 
     GPIOI->AFR[ 0 ] &= ~0x00F00000; // PI5  - FMC_NBL3
     GPIOI->AFR[ 0 ] |=  0x00C00000;
+*/
     
 }
 
@@ -510,23 +527,24 @@ void fmc_sdram_init(void)
     // These bits define the SDRAM clock period for both SDRAM banks and allow disabling the clock
     // before changing the frequency. In this case the SDRAM must be re-initialized.
     
-    FMC_Bank5_6->SDCR[0]  = 0x00000000;
-    FMC_Bank5_6->SDCR[1]  = 0x00000000;
     
     
-    FMC_Bank5_6->SDCR[0] |=  FMC_SDCR1_RPIPE_1;                 // One HCLK clock cycle delay
+
+    FMC_Bank5_6->SDCR[0]  =  0x00000000;
+    FMC_Bank5_6->SDCR[0] |=  FMC_SDCR1_RPIPE_0;                 // One HCLK clock cycle delay
     FMC_Bank5_6->SDCR[0] |=  FMC_SDCR1_RBURST;                  // Single read requests are not managed as bursts
-    FMC_Bank5_6->SDCR[0] |=  FMC_SDCR1_SDCLK_1;                 // SDCLK period = 2 x HCLK  106MHz  было вот так FMC_SDCR1_SDCLK_1
-        
-    // Bank_1
+    FMC_Bank5_6->SDCR[0] |=  FMC_SDCR1_SDCLK_1;                 // SDCLK period = 2 x HCLK  108MHz  было вот так FMC_SDCR1_SDCLK_1
+
+    // Bank_2
+    FMC_Bank5_6->SDCR[1]  =  0x00000000;
     FMC_Bank5_6->SDCR[1] |=  FMC_SDCR2_NB;                      // Number of internal banks     : 4
     FMC_Bank5_6->SDCR[1] |=  FMC_SDCR2_CAS_0 | FMC_SDCR2_CAS_1; // CAS                          : 3 cycles
     FMC_Bank5_6->SDCR[1] |=  FMC_SDCR2_MWID_0;                  // Memory data width            : 16bit        
     FMC_Bank5_6->SDCR[1] |=  FMC_SDCR2_NR_0;                    // Number of row address bit    : 12bit
     FMC_Bank5_6->SDCR[1] &= ~FMC_SDCR2_NC;                      // Number of column address bit :  8bit
+
     
-    
-    
+
     FMC_Bank5_6->SDTR[0] = 0;
     FMC_Bank5_6->SDTR[1] = 0;
     
@@ -535,42 +553,52 @@ void fmc_sdram_init(void)
     // 20ns for 133MHz(-7)
     // 20ns / 10ns ~= 2
     FMC_Bank5_6->SDTR[1] &= ~FMC_SDTR2_TRCD;
-    FMC_Bank5_6->SDTR[1] |=  FMC_SDTR2_TRCD_0;
+    FMC_Bank5_6->SDTR[1] |=  2 << FMC_SDTR2_TRCD_Pos;
     
     
     // Trp - time row precharge delay.
     // 20ns for 133MHz(-7)
     // 20ns / 10ns ~= 2
     FMC_Bank5_6->SDTR[0] &= ~FMC_SDTR1_TRP;
-    FMC_Bank5_6->SDTR[0] |=  FMC_SDTR1_TRP_0;   // 0: 1 cycle
+    FMC_Bank5_6->SDTR[0] |=  FMC_SDTR1_TRP_1;   // 0: 1 cycle
                                                 // 1: 2 cycle
     
     // Twr - Recovery delay between a Write and a Precharge    
     FMC_Bank5_6->SDTR[1] &= ~FMC_SDTR2_TWR;
-    FMC_Bank5_6->SDTR[1] |=  FMC_SDTR2_TWR_0;   // 0: 1 cycle
+    FMC_Bank5_6->SDTR[1] |=  2 << FMC_SDTR2_TWR_Pos;   // 0: 1 cycle
                                                 // 1: 2 cycle
             
     // Trc - time row cycle     delay
     // 67.5ns for 133MHz(-7)
     // 67.5 / 10ns  = ~7 cycles
     FMC_Bank5_6->SDTR[0] &= ~FMC_SDTR1_TRC;
-    FMC_Bank5_6->SDTR[0] |=  (7 - 1) << 12;
+    FMC_Bank5_6->SDTR[0] |=  (7) << FMC_SDTR1_TRC_Pos;
     
     
     // Tras - self refresh period
     // 64ns
     // 64ns / 10ns  = ~7 cycles
-    FMC_Bank5_6->SDTR[1] &= ~FMC_SDTR2_TRAS;    // 0: 1 cycle
-    FMC_Bank5_6->SDTR[1] |= (7 - 1) << FMC_SDTR2_TRAS_Pos;
+    FMC_Bank5_6->SDTR[1] &= ~FMC_SDTR2_TRAS;
+    FMC_Bank5_6->SDTR[1] |= 4 << FMC_SDTR2_TRAS_Pos;
     
     
     // Txsr - Exit Self-refresh delay
-    FMC_Bank5_6->SDTR[1] &= ~FMC_SDTR2_TXSR;     // 0: 1 cycle
+    FMC_Bank5_6->SDTR[1] &= ~FMC_SDTR2_TXSR;
+    FMC_Bank5_6->SDTR[1] |= 7 << FMC_SDTR2_TXSR_Pos;
    
-   // Load Mode Register to Active
-    FMC_Bank5_6->SDTR[1] &= ~FMC_SDTR2_TMRD;     // 0: 1 cycle
-    
-    
+    // Load Mode Register to Active
+    FMC_Bank5_6->SDTR[1] &= ~FMC_SDTR2_TMRD;
+    FMC_Bank5_6->SDTR[1] |=  2 << FMC_SDTR2_TMRD_Pos;
+
+/*    
+        FMC_Bank5_6->SDTR[0] = ((2-1)<<24)                  // 2 cycle TRCD (18.5-ns > 15-ns)
+                         | ((2-1)<<20)                  // 2 cycle TRP (18.5-ns > 15-ns)
+                         | ((2-1)<<16)                  // 2 cycle TWR
+                         | ((7-1)<<12)                  // 7 cycle TRC (64.7-ns > 63-ns)
+                         | ((5-1)<<8)                   // 5 cycle TRAS (46.2-ns > 42-ns)
+                         | ((8-1)<<4)                   // 8 cycle TXSR (74-ns > 70-ns)
+                         | ((2-1)<<0);                  // 2 cycle TMRD
+*/   
     
     
 
@@ -579,12 +607,12 @@ void fmc_sdram_init(void)
     // FMC_SDCMR register to start delivering the clock to the memory (SDCKE is driven high).
     // Target bank 1
     //FMC_Bank5_6->SDCMR   &= ~( FMC_SDCMR_MODE | FMC_SDCMR_CTB1 | FMC_SDCMR_CTB2);
-    FMC_Bank5_6->SDCMR   =  FMC_SDCMR_MODE_0 | FMC_SDCMR_CTB2 | (1 << 5);
+    FMC_Bank5_6->SDCMR   |=  FMC_SDCMR_MODE_0 | FMC_SDCMR_CTB2;
     
     
     // 4. Wait during the prescribed delay period. Typical delay is around 100 μs (refer to the
     // SDRAM datasheet for the required delay after power-up).
-    // IC42S16400: Maintain stable power, table clock , and NOP input conditions for a minimum of 200us    
+    // IC42S16400: Maintain stable power, stable clock , and NOP input conditions for a minimum of 200us    
     for(int i = 0;i < 250;i++)    
         for(int j = 0;j < 300;j++);
     
