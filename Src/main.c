@@ -197,56 +197,27 @@ int main(void)
 
     
     
-    // Mode                 : Alternate function
-    GPIOE->MODER    &= ~(/*GPIO_MODER_MODER0   | GPIO_MODER_MODER1   |*/ GPIO_MODER_MODER7   |  GPIO_MODER_MODER8   | GPIO_MODER_MODER9  | GPIO_MODER_MODER10  | GPIO_MODER_MODER11   | GPIO_MODER_MODER12     );
-    GPIOE->MODER    |=  (/*GPIO_MODER_MODER0_1 | GPIO_MODER_MODER1_1 |*/ GPIO_MODER_MODER7_1 |  GPIO_MODER_MODER8_1 | GPIO_MODER_MODER9_1| GPIO_MODER_MODER10_1| GPIO_MODER_MODER11_1 | GPIO_MODER_MODER12_1 );
+    // Alternate function   :
+    //
+    //  - PE7:  FMC_D4  - VERY HIGH SPEED
+    //  - PE8:  FMC_D5  - VERY HIGH SPEED
+    //  - PE9:  FMC_D6  - VERY HIGH SPEED
+    //  - PE10: FMC_D7  - VERY HIGH SPEED
+    //  - PE11: FMC_D8  - VERY HIGH SPEED
+    //  - PE12: FMC_D9  - VERY HIGH SPEED
+    //  - PE13: FMC_D10 - VERY HIGH SPEED
+    //  - PE14: FMC_D11 - VERY HIGH SPEED
+    //  - PE15: FMC_D12 - VERY HIGH SPEED
     
-    GPIOE->MODER    &= ~(GPIO_MODER_MODER13  | GPIO_MODER_MODER14  | GPIO_MODER_MODER15  );
-    GPIOE->MODER    |=  (GPIO_MODER_MODER13_1| GPIO_MODER_MODER14_1| GPIO_MODER_MODER15_1);
-/*
-    // Alternate function   : 
-    GPIOE->AFR[ 0 ] &= ~0x0000000F;     // PE0  - FMC_NBL0
-    GPIOE->AFR[ 0 ] |=  0x0000000C;
+    GPIOE->MODER    = GPIO_MODER_MODER7_1;    
+    GPIOE->MODER   |= GPIO_MODER_MODER8_1  |  GPIO_MODER_MODER9_1 | GPIO_MODER_MODER10_1 | GPIO_MODER_MODER11_1;    
+    GPIOE->MODER   |= GPIO_MODER_MODER12_1 | GPIO_MODER_MODER13_1 | GPIO_MODER_MODER14_1 | GPIO_MODER_MODER15_1;
+                
+    GPIOE->AFR[ 0 ] = 0xC0000000;
+    GPIOE->AFR[ 1 ] = 0xCCCCCCCC;               
     
-    // Alternate function   : 
-    GPIOE->AFR[ 0 ] &= ~0x000000F0;     // PE1  - FMC_NBL1
-    GPIOE->AFR[ 0 ] |=  0x000000C0;
-*/    
-    // Alternate function   : 
-    GPIOE->AFR[ 0 ] &= ~0xF0000000;     // PE7  - FMC_D4
-    GPIOE->AFR[ 0 ] |=  0xC0000000;
-        
-    // Alternate function   : 
-    GPIOE->AFR[ 1 ] &= ~0x0000000F;     // PE8  - FMC_D5
-    GPIOE->AFR[ 1 ] |=  0x0000000C;
+    GPIOE->OSPEEDR  = 0xFFFFC000;
     
-    // Alternate function   : 
-    GPIOE->AFR[ 1 ] &= ~0x000000F0;     // PE9  - FMC_D6
-    GPIOE->AFR[ 1 ] |=  0x000000C0;    
-    
-    // Alternate function   : 
-    GPIOE->AFR[ 1 ] &= ~0x00000F00;     // PE10 - FMC_D7
-    GPIOE->AFR[ 1 ] |=  0x00000C00;  
-    
-    // Alternate function   : 
-    GPIOE->AFR[ 1 ] &= ~0x0000F000;     // PE11 - FMC_D8
-    GPIOE->AFR[ 1 ] |=  0x0000C000;
-    
-    // Alternate function   : 
-    GPIOE->AFR[ 1 ] &= ~0x000F0000;     // PE12 - FMC_D9
-    GPIOE->AFR[ 1 ] |=  0x000C0000;
-    
-    // Alternate function   : 
-    GPIOE->AFR[ 1 ] &= ~0x00F00000;     // PE13 - FMC_D10
-    GPIOE->AFR[ 1 ] |=  0x00C00000;    
-    
-    // Alternate function   : 
-    GPIOE->AFR[ 1 ] &= ~0x0F000000;     // PE14 - FMC_D11
-    GPIOE->AFR[ 1 ] |=  0x0C000000;
-    
-    // Alternate function   : 
-    GPIOE->AFR[ 1 ] &= ~0xF0000000;     // PE15 - FMC_D12
-    GPIOE->AFR[ 1 ] |=  0xC0000000; 
 
 
     // Mode                 : Alternate function
