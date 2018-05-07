@@ -33,6 +33,9 @@ uint32_t    g_frame_cnt         = 0;
 #define TRCD(x) (x << 24)
 
 
+// К этой плате нужно подключать USB питание 
+
+
 int main(void)
 {
     HAL_Init();
@@ -171,44 +174,26 @@ int main(void)
 
 
 
-
-    // Mode                 : Alternate function
-    GPIOD->MODER    &= ~(GPIO_MODER_MODER0   | GPIO_MODER_MODER1   | GPIO_MODER_MODER3   | GPIO_MODER_MODER8   | GPIO_MODER_MODER9   | GPIO_MODER_MODER10   | GPIO_MODER_MODER14   | GPIO_MODER_MODER15);
-    GPIOD->MODER    |=  (GPIO_MODER_MODER0_1 | GPIO_MODER_MODER1_1 | GPIO_MODER_MODER3_1 | GPIO_MODER_MODER8_1 | GPIO_MODER_MODER9_1 | GPIO_MODER_MODER10_1 | GPIO_MODER_MODER14_1 | GPIO_MODER_MODER15_1);
-        
-
+                
     // Alternate function   : 
-    GPIOD->AFR[ 0 ] &= ~0x0000000F; // PD0  - FMC_D2
-    GPIOD->AFR[ 0 ] |=  0x0000000C;
+    //
+    //  - PD0:  FMC_D2  - VERY HIGH SPEED
+    //  - PD1:  FMC_D3  - VERY HIGH SPEED
+    //  - PD3:  DCMI_D5 - LOW SPEED
     
-    // Alternate function   : 
-    GPIOD->AFR[ 0 ] &= ~0x000000F0; // PD1  - FMC_D3
-    GPIOD->AFR[ 0 ] |=  0x000000C0;
+    //  - PD8:  FMC_D13 - VERY HIGH SPEED
+    //  - PD9:  FMC_D14 - VERY HIGH SPEED
+    //  - PD10: FMC_D15 - VERY HIGH SPEED
+    //  - PD14: FMC_D0  - VERY HIGH SPEED
+    //  - PD15: FMC_D1  - VERY HIGH SPEED
+    GPIOD->MODER    =   GPIO_MODER_MODER0_1 | GPIO_MODER_MODER1_1 | GPIO_MODER_MODER3_1;
+    GPIOD->MODER   |=   GPIO_MODER_MODER8_1 | GPIO_MODER_MODER9_1 | GPIO_MODER_MODER10_1 | GPIO_MODER_MODER14_1 | GPIO_MODER_MODER15_1;
+           
+    GPIOD->AFR[ 0 ] =   0x0000D0CC;    
+    GPIOD->AFR[ 1 ] =   0xCC000CCC;
     
-    // Alternate function   : 
-    GPIOD->AFR[ 0 ] &= ~0x0000F000; // PD3  - DCMI_D5
-    GPIOD->AFR[ 0 ] |=  0x0000D000;
-
-    // Alternate function   : 
-    GPIOD->AFR[ 1 ] &= ~0x0000000F; // PD8  - FMC_D13
-    GPIOD->AFR[ 1 ] |=  0x0000000C;
-    
-    // Alternate function   : 
-    GPIOD->AFR[ 1 ] &= ~0x000000F0; // PD9  - FMC_D14
-    GPIOD->AFR[ 1 ] |=  0x000000C0;
-    
-    // Alternate function   : 
-    GPIOD->AFR[ 1 ] &= ~0x00000F00; // PD10 - FMC_D15
-    GPIOD->AFR[ 1 ] |=  0x00000C00;    
-    
-    // Alternate function   : 
-    GPIOD->AFR[ 1 ] &= ~0x0F000000; // PD14 - FMC_D0
-    GPIOD->AFR[ 1 ] |=  0x0C000000;
-    
-    // Alternate function   : 
-    GPIOD->AFR[ 1 ] &= ~0xF0000000; // PD15 - FMC_D1
-    GPIOD->AFR[ 1 ] |=  0xC0000000;
-    
+    GPIOD->OSPEEDR  =   0xF03F000F;
+                    
 
     
     
@@ -563,7 +548,19 @@ void fmc_sdram_init(void)
     FMC_Bank5_6->SDTR[1] &= ~FMC_SDTR2_TMRD;
     FMC_Bank5_6->SDTR[1] |=  2 << FMC_SDTR2_TMRD_Pos;
 
-       
+/*    
+        FMC_Bank5_6->SDTR[0] = ((2-1)<<24)                  // 2 cycle TRCD (18.5-ns > 15-ns)
+                         | ((2-1)<<20)                  // 2 cycle TRP (18.5-ns > 15-ns)
+                         | ((2-1)<<16)                  // 2 cycle TWR
+                         | ((7-1)<<12)                  // 7 cycle TRC (64.7-ns > 63-ns)
+                         | ((5-1)<<8)                   // 5 cycle TRAS (46.2-ns > 42-ns)
+                         | ((8-1)<<4)                   // 8 cycle TXSR (74-ns > 70-ns)
+                         | ((2-1)<<0);                  // 2 cycle TMRD
+*/   
+    
+    
+
+
     // 3. Set MODE bits to ‘001’ and configure the Target Bank bits (CTB1 and/or CTB2) in the
     // FMC_SDCMR register to start delivering the clock to the memory (SDCKE is driven high).
     // Target bank 1
