@@ -310,48 +310,21 @@ int main(void)
     
     
     
-    
-    
-    
-    // Mode                 : Alternate function
-    GPIOG->MODER    &= ~(GPIO_MODER_MODER0   | GPIO_MODER_MODER1   | GPIO_MODER_MODER2   | GPIO_MODER_MODER8   | /*GPIO_MODER_MODER9   | GPIO_MODER_MODER14   |*/ GPIO_MODER_MODER15    );
-    GPIOG->MODER    |=  (GPIO_MODER_MODER0_1 | GPIO_MODER_MODER1_1 | GPIO_MODER_MODER2_1 | GPIO_MODER_MODER8_1 | /*GPIO_MODER_MODER9_1 | GPIO_MODER_MODER14_1 |*/ GPIO_MODER_MODER15_1  );
-    
     // Alternate functions  : 
     //
     //  - PG0:  FMC_A10    
     //  - PG1:  FMC_A11
-    
-    
-    GPIOG->AFR[ 0 ] &= ~0x000000FF; 
-    GPIOG->AFR[ 0 ] |=  0x000000CC;
-               
-    
-    // Alternate function   : 
-    GPIOG->AFR[ 0 ] &= ~0x00000F00; // PG2  - FMC_A12
-    GPIOG->AFR[ 0 ] |=  0x00000C00;
-    
-    // Alternate function   : 
-    GPIOG->AFR[ 1 ] &= ~0x0000000F; // PG8  - FMC_SDCLK
-    GPIOG->AFR[ 1 ] |=  0x0000000C;
-    
-    // Speed:   
-    GPIOG->OSPEEDR  |=  0x00030000; // Very high
-    
-    
-    
-/*
-    // Alternate function   : 
-    GPIOG->AFR[ 1 ] &= ~0x000000F0; // PG9  - USART6_RX
-    GPIOG->AFR[ 1 ] |=  0x00000080;
-    
-    // Alternate function   : 
-    GPIOG->AFR[ 1 ] &= ~0x0F000000; // PG14 - USART6_TX
-    GPIOG->AFR[ 1 ] |=  0x08000000;    
-*/    
-    // Alternate function   : 
-    GPIOG->AFR[ 1 ] &= ~0xF0000000; // PG15 - FMC_SDNCAS
-    GPIOG->AFR[ 1 ] |=  0xC0000000;  
+    //  - PG2:  FMC_A12             
+    //  - PG8:  FMC_SDCLK        
+    //  - PG15: FMC_SDNCAS
+    GPIOG->MODER    = GPIO_MODER_MODER0_1 | GPIO_MODER_MODER1_1 | GPIO_MODER_MODER2_1 | GPIO_MODER_MODER8_1 | GPIO_MODER_MODER15_1;
+
+    GPIOG->AFR[ 0 ] = 0x00000CCC;    
+    GPIOG->AFR[ 1 ] = 0xC000000C;
+
+    // Speed: Very high
+    GPIOG->OSPEEDR  = 0xC003003F;
+            
     
     
     // Mode                 : Alternate function
