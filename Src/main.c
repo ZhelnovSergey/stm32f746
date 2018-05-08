@@ -1,15 +1,26 @@
 #include "main.h"
 #include "stm32f7xx_hal.h"
 
+#include "dcmi.h"
 #include "timers.h"
+
+#define TMRD(x) (x << 0)
+#define TXSR(x) (x << 4)
+#define TRAS(x) (x << 8)
+#define TRC(x)  (x << 12)
+#define TWR(x)  (x << 16)
+#define TRP(x)  (x << 20)
+#define TRCD(x) (x << 24)
+
+
+
 
 void SystemClock_Config         (void);
 void ports_init                 (void);
 
 void dma_dcmi_init              (void);
 
-void dcmi_ov7725_init           (void);
-void dcmi_fcb_ex48ep_init       (void);
+
 
 void fmc_sdram_init             (void);
 
@@ -24,16 +35,13 @@ uint8_t     g_frame_buffer      [200][1504]; //[200][1504];
 uint32_t    g_frame_cnt         = 0;
 
 
-#define TMRD(x) (x << 0)
-#define TXSR(x) (x << 4)
-#define TRAS(x) (x << 8)
-#define TRC(x)  (x << 12)
-#define TWR(x)  (x << 16)
-#define TRP(x)  (x << 20)
-#define TRCD(x) (x << 24)
 
 
-// К этой плате нужно подключать USB питание 
+
+
+unsigned int*   pData = 0xD0000000;
+unsigned int    Data  = 0;
+
 
 
 int main(void)
@@ -47,10 +55,9 @@ int main(void)
     ports_init      ();
     fmc_sdram_init  ();
     
-    unsigned int*   pData = 0xD0000000;
-    unsigned int    Data  = 0;
+
     
-    *pData = 1;
+    *pData = 0x1234;
     Data  = *pData;
     
     
@@ -210,7 +217,7 @@ int main(void)
     //  - PE15: FMC_D12 - VERY HIGH SPEED
     
     GPIOE->MODER    = GPIO_MODER_MODER7_1;    
-    GPIOE->MODER   |= GPIO_MODER_MODER8_1  |  GPIO_MODER_MODER9_1 | GPIO_MODER_MODER10_1 | GPIO_MODER_MODER11_1;    
+    GPIOE->MODER   |= GPIO_MODER_MODER8_1  | GPIO_MODER_MODER9_1  | GPIO_MODER_MODER10_1 | GPIO_MODER_MODER11_1;    
     GPIOE->MODER   |= GPIO_MODER_MODER12_1 | GPIO_MODER_MODER13_1 | GPIO_MODER_MODER14_1 | GPIO_MODER_MODER15_1;
                 
     GPIOE->AFR[ 0 ] = 0xC0000000;
@@ -220,46 +227,29 @@ int main(void)
     
 
 
-    // Mode                 : Alternate function
-    GPIOF->MODER   &= ~(GPIO_MODER_MODER0   | GPIO_MODER_MODER1   | GPIO_MODER_MODER2   | GPIO_MODER_MODER3   | GPIO_MODER_MODER4   | GPIO_MODER_MODER5   | GPIO_MODER_MODER11   | GPIO_MODER_MODER12   );
-    GPIOF->MODER   |=  (GPIO_MODER_MODER0_1 | GPIO_MODER_MODER1_1 | GPIO_MODER_MODER2_1 | GPIO_MODER_MODER3_1 | GPIO_MODER_MODER4_1 | GPIO_MODER_MODER5_1 | GPIO_MODER_MODER11_1 | GPIO_MODER_MODER12_1 );
-            
-    GPIOF->MODER   &= ~(GPIO_MODER_MODER13  | GPIO_MODER_MODER14  | GPIO_MODER_MODER15  );
-    GPIOF->MODER   |=  (GPIO_MODER_MODER13_1| GPIO_MODER_MODER14_1| GPIO_MODER_MODER15_1);                                    
-            
-    // Alternate function   : 
-    GPIOF->AFR[ 0 ] &= ~0x0000000F; // PF0  - FMC_A0
-    GPIOF->AFR[ 0 ] |=  0x0000000C;
+    // Mode     : Alternate function    
     
-    GPIOF->AFR[ 0 ] &= ~0x000000F0; // PF1  - FMC_A1
-    GPIOF->AFR[ 0 ] |=  0x000000C0;
+    //  - PF0:  FMC_A0      - VERY HIGH SPEED
+    //  - PF1:  FMC_A1      - VERY HIGH SPEED
+    //  - PF2:  FMC_A2      - VERY HIGH SPEED
+    //  - PF3:  FMC_A3      - VERY HIGH SPEED
+    //  - PF4:  FMC_A4      - VERY HIGH SPEED
+    //  - PF5:  FMC_A5      - VERY HIGH SPEED
+    //  - PF11: FMC_SDNRAS  - VERY HIGH SPEED
+    //  - PF12: FMC_A6      - VERY HIGH SPEED
+    //  - PF13: FMC_A7      - VERY HIGH SPEED
+    //  - PF14: FMC_A8      - VERY HIGH SPEED
+    //  - PF15: FMC_A9      - VERY HIGH SPEED
     
-    GPIOF->AFR[ 0 ] &= ~0x00000F00; // PF2  - FMC_A2
-    GPIOF->AFR[ 0 ] |=  0x00000C00;
-    
-    GPIOF->AFR[ 0 ] &= ~0x0000F000; // PF3  - FMC_A3
-    GPIOF->AFR[ 0 ] |=  0x0000C000;        
-    
-    GPIOF->AFR[ 0 ] &= ~0x000F0000; // PF4  - FMC_A4
-    GPIOF->AFR[ 0 ] |=  0x000C0000;
-    
-    GPIOF->AFR[ 0 ] &= ~0x00F00000; // PF5  - FMC_A5
-    GPIOF->AFR[ 0 ] |=  0x00C00000;
+    GPIOF->MODER   =  0x00000000;
+    GPIOF->MODER  |=  GPIO_MODER_MODER0_1  | GPIO_MODER_MODER1_1 | GPIO_MODER_MODER2_1  | GPIO_MODER_MODER3_1;        
+    GPIOF->MODER  |=  GPIO_MODER_MODER4_1  | GPIO_MODER_MODER5_1 | GPIO_MODER_MODER11_1 | GPIO_MODER_MODER12_1;    
+    GPIOF->MODER  |=  GPIO_MODER_MODER13_1 | GPIO_MODER_MODER14_1| GPIO_MODER_MODER15_1;    
 
-    GPIOF->AFR[ 1 ] &= ~0x0000F000; // PF11 - FMC_SDNRAS
-    GPIOF->AFR[ 1 ] |=  0x0000C000;
+    GPIOF->AFR[ 0 ]=  0x00CCCCCC;
+    GPIOF->AFR[ 1 ]=  0xCCCCC000;
     
-    GPIOF->AFR[ 1 ] &= ~0x000F0000; // PF12 - FMC_A6
-    GPIOF->AFR[ 1 ] |=  0x000C0000;
-    
-    GPIOF->AFR[ 1 ] &= ~0x00F00000; // PF13 - FMC_A7
-    GPIOF->AFR[ 1 ] |=  0x00C00000;    
-    
-    GPIOF->AFR[ 1 ] &= ~0x0F000000; // PF14 - FMC_A8
-    GPIOF->AFR[ 1 ] |=  0x0C000000;
-    
-    GPIOF->AFR[ 1 ] &= ~0xF0000000; // PF15 - FMC_A9
-    GPIOF->AFR[ 1 ] |=  0xC0000000;    
+    GPIOF->OSPEEDR =  0xFFC00FFF;
     
     
     
@@ -302,6 +292,8 @@ int main(void)
     // Alternate function   :     
     GPIOH->AFR[ 1 ] &= ~0x0F000000; // PH14 - DCMI_D4
     GPIOH->AFR[ 1 ] |=  0x0D000000;
+    
+    GPIOH->OSPEEDR  = 0xFFFFFFFF;
     
     
 /*    
@@ -352,94 +344,11 @@ void dma_dcmi_init(void)
     DMA2_Stream7->CR |= DMA_SxCR_EN;
 }
 
-void dcmi_ov7725_init(void)
-{
-    RCC->AHB2ENR |= RCC_AHB2ENR_DCMIEN;
-
-    // Extended data mode               : 10bit data bus
-    DCMI->CR &= ~(DCMI_CR_EDM_0 | DCMI_CR_EDM_1);
-    DCMI->CR |= DCMI_CR_EDM_0;
-
-    // Vertical synchronization polarity: indicates the level on the DCMI_VSYNC pin when the data are NOT VALID    
-    DCMI->CR |= DCMI_CR_VSPOL; //High
 
 
-    // Embedded synchronization select  : Hardware synchronization    
-    DCMI->CR &= ~DCMI_CR_ESS;
+//Note:     The DMA controller and all DCMI configuration registers should be 
+  //          programmed correctly before enabling this bit.
 
-    // Capture mode                     : Snapshot mode (single frame)
-    DCMI->CR |= DCMI_CR_CM;
-
-    // Pixel clock polarity             : Rising edge active
-    DCMI->CR |= DCMI_CR_PCKPOL;
-
-    //DCMI->ESUR |=  0x40101000;
-    //DCMI->ESCR |=  0x40100040;
-
-    // Capture                          : Enabled
-    DCMI->CR |= DCMI_CR_CAPTURE;
-
-    // Enable interface                 : On
-    DCMI->CR |= DCMI_CR_ENABLE;
-
-
-    //Note:     The DMA controller and all DCMI configuration registers should be 
-    //          programmed correctly before enabling this bit.
-}
-
-void DCMI_IRQHandler(void)
-{
-    if( DCMI->RISR & DCMI_RISR_LINE_RIS )
-    {        
-        DCMI->ICR |= DCMI_ICR_LINE_ISC; 
-
-        //g_frame_cnt++;
-        //DMA2_Stream7->M0AR = (uint32_t) & g_frame_buffer[g_frame_cnt]; // Destination
-        
-        //DCMI->CR |= DCMI_CR_CAPTURE;
-
-
-    }            
-        
-}
-
-void dcmi_fcb_ex48ep_init(void)
-{
-    RCC->AHB2ENR |= RCC_AHB2ENR_DCMIEN;
-
-    // Extended data mode               : 8bit data bus
-    DCMI->CR &= ~(DCMI_CR_EDM_0 | DCMI_CR_EDM_1);    
-    
-
-
-    // Embedded synchronization select  : Embedded synchronization    
-    DCMI->CR |= DCMI_CR_ESS;
-
-    // Capture mode                     : Snapshot mode (single frame)
-    DCMI->CR |= DCMI_CR_CM;
-
-    // Pixel clock polarity             : Rising edge active
-    DCMI->CR |= DCMI_CR_PCKPOL;
-
-    // Mask
-    DCMI->ESUR =  0xF0F0F0F0;
-    
-    // Code
-    DCMI->ESCR =  0xFF908080;
-    
-    NVIC_EnableIRQ( DCMI_IRQn );
-    DCMI->IER  =  DCMI_IER_LINE_IE; //DCMI_IER_LINE_IE;
-
-    // Capture                          : Enabled
-    DCMI->CR |= DCMI_CR_CAPTURE;
-
-    // Enable interface                 : On
-    DCMI->CR |= DCMI_CR_ENABLE;
-
-
-    //Note:     The DMA controller and all DCMI configuration registers should be 
-    //          programmed correctly before enabling this bit.
-}
 
 
 
@@ -461,13 +370,13 @@ void fmc_sdram_init(void)
 
     FMC_Bank5_6->SDCR[0]  =  0x00000000;
     FMC_Bank5_6->SDCR[0] |=  FMC_SDCR1_RPIPE_0;                 // One HCLK clock cycle delay
-    FMC_Bank5_6->SDCR[0] |=  FMC_SDCR1_RBURST;                  // Single read requests are not managed as bursts
-    FMC_Bank5_6->SDCR[0] |=  FMC_SDCR1_SDCLK_1;                 // SDCLK period = 2 x HCLK  108MHz  было вот так FMC_SDCR1_SDCLK_1
+    FMC_Bank5_6->SDCR[0] |=  FMC_SDCR1_RBURST;                  // Single read requests are always managed as bursts
+    FMC_Bank5_6->SDCR[0] |=  FMC_SDCR1_SDCLK_1;                 // SDCLK period = 2 x HCLK  108MHz
 
     // Bank_2
     FMC_Bank5_6->SDCR[1]  =  0x00000000;
     FMC_Bank5_6->SDCR[1] |=  FMC_SDCR2_NB;                      // Number of internal banks     : 4
-    FMC_Bank5_6->SDCR[1] |=  FMC_SDCR2_CAS_0 | FMC_SDCR2_CAS_1; // CAS                          : 3 cycles
+    FMC_Bank5_6->SDCR[1] |=  FMC_SDCR2_CAS_1;                   // CAS                          : 2 cycles
     FMC_Bank5_6->SDCR[1] |=  FMC_SDCR2_MWID_0;                  // Memory data width            : 16bit        
     FMC_Bank5_6->SDCR[1] |=  FMC_SDCR2_NR_0;                    // Number of row address bit    : 12bit
     FMC_Bank5_6->SDCR[1] &= ~FMC_SDCR2_NC;                      // Number of column address bit :  8bit
@@ -482,7 +391,7 @@ void fmc_sdram_init(void)
     // 20ns for 133MHz(-7)
     // 20ns / 10ns ~= 2
     FMC_Bank5_6->SDTR[1] &= ~FMC_SDTR2_TRCD;
-    FMC_Bank5_6->SDTR[1] |=  2 << FMC_SDTR2_TRCD_Pos;
+    FMC_Bank5_6->SDTR[1] |=  (2 - 1) << FMC_SDTR2_TRCD_Pos;
     
     
     // Trp - time row precharge delay.
@@ -494,42 +403,35 @@ void fmc_sdram_init(void)
     
     // Twr - Recovery delay between a Write and a Precharge    
     FMC_Bank5_6->SDTR[1] &= ~FMC_SDTR2_TWR;
-    FMC_Bank5_6->SDTR[1] |=  2 << FMC_SDTR2_TWR_Pos;   // 0: 1 cycle
-                                                // 1: 2 cycle
+    FMC_Bank5_6->SDTR[1] |=  (2 - 1) << FMC_SDTR2_TWR_Pos;  // 0: 1 cycle
+                                                            // 1: 2 cycle
             
     // Trc - time row cycle     delay
     // 67.5ns for 133MHz(-7)
     // 67.5 / 10ns  = ~7 cycles
     FMC_Bank5_6->SDTR[0] &= ~FMC_SDTR1_TRC;
-    FMC_Bank5_6->SDTR[0] |=  (7) << FMC_SDTR1_TRC_Pos;
+    FMC_Bank5_6->SDTR[0] |=  (7 - 1) << FMC_SDTR1_TRC_Pos;
     
     
-    // Tras - self refresh period
-    // 64ns
-    // 64ns / 10ns  = ~7 cycles
+    // Tras - row active time
+    // 45ns
+    // 45ns / 10ns  = ~5 cycles
     FMC_Bank5_6->SDTR[1] &= ~FMC_SDTR2_TRAS;
-    FMC_Bank5_6->SDTR[1] |= 4 << FMC_SDTR2_TRAS_Pos;
+    FMC_Bank5_6->SDTR[1] |= (5 - 1) << FMC_SDTR2_TRAS_Pos;
     
     
     // Txsr - Exit Self-refresh delay
+    // 7ns  / 10ns
     FMC_Bank5_6->SDTR[1] &= ~FMC_SDTR2_TXSR;
-    FMC_Bank5_6->SDTR[1] |= 7 << FMC_SDTR2_TXSR_Pos;
+    //FMC_Bank5_6->SDTR[1] |= 7 << FMC_SDTR2_TXSR_Pos;
    
     // Load Mode Register to Active
+    // 10ns / 10ns = 1
     FMC_Bank5_6->SDTR[1] &= ~FMC_SDTR2_TMRD;
-    FMC_Bank5_6->SDTR[1] |=  2 << FMC_SDTR2_TMRD_Pos;
+    //FMC_Bank5_6->SDTR[1] |=  2 << FMC_SDTR2_TMRD_Pos;
 
-/*    
-        FMC_Bank5_6->SDTR[0] = ((2-1)<<24)                  // 2 cycle TRCD (18.5-ns > 15-ns)
-                         | ((2-1)<<20)                  // 2 cycle TRP (18.5-ns > 15-ns)
-                         | ((2-1)<<16)                  // 2 cycle TWR
-                         | ((7-1)<<12)                  // 7 cycle TRC (64.7-ns > 63-ns)
-                         | ((5-1)<<8)                   // 5 cycle TRAS (46.2-ns > 42-ns)
-                         | ((8-1)<<4)                   // 8 cycle TXSR (74-ns > 70-ns)
-                         | ((2-1)<<0);                  // 2 cycle TMRD
-*/   
-    
-    
+
+       
 
 
     // 3. Set MODE bits to ‘001’ and configure the Target Bank bits (CTB1 and/or CTB2) in the
@@ -542,7 +444,7 @@ void fmc_sdram_init(void)
     // 4. Wait during the prescribed delay period. Typical delay is around 100 μs (refer to the
     // SDRAM datasheet for the required delay after power-up).
     // IC42S16400: Maintain stable power, stable clock , and NOP input conditions for a minimum of 200us    
-    for(int i = 0;i < 250;i++)    
+    for(int i = 0;i < 25000;i++)    
         for(int j = 0;j < 300;j++);
     
     
@@ -552,13 +454,14 @@ void fmc_sdram_init(void)
     //FMC_Bank5_6->SDCMR   &= ~( FMC_SDCMR_MODE | FMC_SDCMR_CTB1 | FMC_SDCMR_CTB2);
     FMC_Bank5_6->SDCMR   =  FMC_SDCMR_MODE_1 | FMC_SDCMR_CTB2;
     
+    for(int i = 0;i < 25000;i++);
     
     // 6. Set MODE bits to ‘011’, and configure the Target Bank bits (CTB1 and/or CTB2) as well
     // as the number of consecutive Auto-refresh commands (NRFS) in the FMC_SDCMR
     // register. Refer to the SDRAM datasheet for the number of Auto-refresh commands that
     // should be issued. Typical number is 8
     //FMC_Bank5_6->SDCMR   &= ~( FMC_SDCMR_MODE | FMC_SDCMR_CTB1 | FMC_SDCMR_CTB2 | FMC_SDCMR_NRFS);
-    //FMC_Bank5_6->SDCMR   |=   FMC_SDCMR_MODE_0 | FMC_SDCMR_MODE_1 | FMC_SDCMR_CTB2 | FMC_SDCMR_NRFS_3;
+    //FMC_Bank5_6->SDCMR   |=   FMC_SDCMR_MODE_0 | FMC_SDCMR_MODE_1 | FMC_SDCMR_CTB2 | FMC_SDCMR_NRFS_3;        
     FMC_Bank5_6->SDCMR      =(8 << 5) /* NRFS */ | FMC_SDCMR_CTB2 | (3); // Autorefresh
     
     
@@ -567,14 +470,14 @@ void fmc_sdram_init(void)
     // and configure the Target Bank bits (CTB1 and/or CTB2) in the FMC_SDCMR register
     // to issue a "Load Mode Register"
             
-    // - the CAS latency must be selected   : 3
+    // - the CAS latency must be selected   : 2
     // - burst length must be selected to   : 1
         
     
-    FMC_Bank5_6->SDCMR   = ((3 << 4) << 9) | FMC_SDCMR_CTB2 | 4;
+    FMC_Bank5_6->SDCMR   = ((2 << 4) << 9) | FMC_SDCMR_CTB2 | 4;
            
     // 8. Program the refresh rate in the FMC_SDRTR register
-    FMC_Bank5_6->SDRTR   = 2572;
+    FMC_Bank5_6->SDRTR   = 1667;
     
     
     
