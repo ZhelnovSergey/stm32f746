@@ -39,7 +39,7 @@ uint32_t    g_frame_cnt         = 0;
 
 
 
-unsigned int*   pData = 0xD0000000;
+unsigned int*     pData = 0xD0000000;
 unsigned int    Data  = 0;
 
 
@@ -55,10 +55,17 @@ int main(void)
     ports_init      ();
     fmc_sdram_init  ();
     
+    pData[0] = 0x12345678;
+    Data     = pData[0];
 
     
-    *pData = 0x12345678;
-    Data  = *pData;
+    for( int i = 0;i < 100;i++ )
+    {
+        pData[ i ] = i;
+        Data = pData[ i ];
+    }
+    
+    
     
     
     
@@ -206,21 +213,24 @@ int main(void)
     
     // Alternate function   :
     //
-    //  - PE7:  FMC_D4  - VERY HIGH SPEED
-    //  - PE8:  FMC_D5  - VERY HIGH SPEED
-    //  - PE9:  FMC_D6  - VERY HIGH SPEED
-    //  - PE10: FMC_D7  - VERY HIGH SPEED
-    //  - PE11: FMC_D8  - VERY HIGH SPEED
-    //  - PE12: FMC_D9  - VERY HIGH SPEED
-    //  - PE13: FMC_D10 - VERY HIGH SPEED
-    //  - PE14: FMC_D11 - VERY HIGH SPEED
-    //  - PE15: FMC_D12 - VERY HIGH SPEED
+    //  - PE0:  FMC_NBL0
+    //  - PE1:  FMC_NBL1
+    //  - PE7:  FMC_D4
+    //  - PE8:  FMC_D5
+    //  - PE9:  FMC_D6
+    //  - PE10: FMC_D7
+    //  - PE11: FMC_D8
+    //  - PE12: FMC_D9
+    //  - PE13: FMC_D10
+    //  - PE14: FMC_D11
+    //  - PE15: FMC_D12
     
-    GPIOE->MODER    = GPIO_MODER_MODER7_1;    
+    GPIOE->MODER    = GPIO_MODER_MODER0_1  | GPIO_MODER_MODER1_1  | GPIO_MODER_MODER7_1;    
     GPIOE->MODER   |= GPIO_MODER_MODER8_1  | GPIO_MODER_MODER9_1  | GPIO_MODER_MODER10_1 | GPIO_MODER_MODER11_1;    
     GPIOE->MODER   |= GPIO_MODER_MODER12_1 | GPIO_MODER_MODER13_1 | GPIO_MODER_MODER14_1 | GPIO_MODER_MODER15_1;
-                
-    GPIOE->AFR[ 0 ] = 0xC0000000;
+        
+    
+    GPIOE->AFR[ 0 ] = 0xC00000CC;
     GPIOE->AFR[ 1 ] = 0xCCCCCCCC;               
     
     GPIOE->OSPEEDR  = 0xFFFFC000;
@@ -260,15 +270,17 @@ int main(void)
     //
     //  - PG0:  FMC_A10    
     //  - PG1:  FMC_A11    
+    //  - PG4:  FMC_A14     [BA0]
+    //  - PG5:  FMC_A15     [BA1]    
     //  - PG8:  FMC_SDCLK        
     //  - PG15: FMC_SDNCAS
-    GPIOG->MODER    = GPIO_MODER_MODER0_1 | GPIO_MODER_MODER1_1 | GPIO_MODER_MODER8_1 | GPIO_MODER_MODER15_1;
+    GPIOG->MODER    = GPIO_MODER_MODER0_1 | GPIO_MODER_MODER1_1 | GPIO_MODER_MODER4_1 | GPIO_MODER_MODER5_1 | GPIO_MODER_MODER8_1 | GPIO_MODER_MODER15_1;
 
-    GPIOG->AFR[ 0 ] = 0x000000CC;    
+    GPIOG->AFR[ 0 ] = 0x00CC00CC;
     GPIOG->AFR[ 1 ] = 0xC000000C;
 
     // Speed: Very high
-    GPIOG->OSPEEDR  = 0xC003000F;
+    GPIOG->OSPEEDR  = 0xC0030F0F;
             
     
     
@@ -359,7 +371,7 @@ void fmc_sdram_init(void)
     
 
     FMC_Bank5_6->SDCR[0]  =  0x00000000;
-    FMC_Bank5_6->SDCR[0] &= ~FMC_SDCR1_RPIPE;                   // No HCLK clock cycle delay
+    FMC_Bank5_6->SDCR[0] |= ~FMC_SDCR1_RPIPE_0;                   // No HCLK clock cycle delay
     FMC_Bank5_6->SDCR[0] |=  FMC_SDCR1_RBURST;                  // Single read requests are always managed as bursts
     FMC_Bank5_6->SDCR[0] |=  FMC_SDCR1_SDCLK_1;                 // SDCLK period = 2 x HCLK  133MHz
 
@@ -461,7 +473,7 @@ void fmc_sdram_init(void)
     // - burst length must be selected to   : 1
         
     
-    FMC_Bank5_6->SDCMR   = ((3 << 4 | 1) << 9) | FMC_SDCMR_CTB2 | 4;
+    FMC_Bank5_6->SDCMR   = ((/*(4 << 7) |*/ (3 << 4) | 0) << 9) | FMC_SDCMR_CTB2 | 4;
     
     for(int i = 0;i < 25000;i++)    
         for(int j = 0;j < 300;j++);
