@@ -272,27 +272,18 @@ int main(void)
             
     
     
-    // Mode                 : Alternate function
-    GPIOH->MODER    &= ~(GPIO_MODER_MODER5   | GPIO_MODER_MODER6   | GPIO_MODER_MODER7   | GPIO_MODER_MODER14);
-    GPIOH->MODER    |=  (GPIO_MODER_MODER5_1 | GPIO_MODER_MODER6_1 | GPIO_MODER_MODER7_1 | GPIO_MODER_MODER14_1);
+    // Mode                 : Alternate function    
+    GPIOH->MODER    = GPIO_MODER_MODER5_1 | GPIO_MODER_MODER6_1 | GPIO_MODER_MODER7_1 | GPIO_MODER_MODER14_1;
 
     // Alternate function   : 
-    GPIOH->AFR[ 0 ] &= ~0x00F00000; // PH5  - FMC_SDNWE
-    GPIOH->AFR[ 0 ] |=  0x00C00000;
+    //  - PH5:  FMC_SDNWE        
+    //  - PH6:  FMC_SDNE1
+    //  - PH7:  FMC_SDCKE1
+    //  - PH14: DCMI_D4
+    GPIOH->AFR[ 0 ] = 0xCCC00000;                       
+    GPIOH->AFR[ 1 ] = 0x0D000000;
     
-    // Alternate function   : 
-    GPIOH->AFR[ 0 ] &= ~0x0F000000; // PH6  - FMC_SDNE1
-    GPIOH->AFR[ 0 ] |=  0x0C000000;
-    
-        // Alternate function   : 
-    GPIOH->AFR[ 0 ] &= ~0xF0000000; // PH7  - FMC_SDCKE1
-    GPIOH->AFR[ 0 ] |=  0xC0000000;
-    
-    // Alternate function   :     
-    GPIOH->AFR[ 1 ] &= ~0x0F000000; // PH14 - DCMI_D4
-    GPIOH->AFR[ 1 ] |=  0x0D000000;
-    
-    GPIOH->OSPEEDR  = 0xFFFFFFFF;
+    GPIOH->OSPEEDR  = 0x0000FC00;
     
     
 /*    
@@ -470,7 +461,7 @@ void fmc_sdram_init(void)
     // - burst length must be selected to   : 1
         
     
-    FMC_Bank5_6->SDCMR   = ((3 << 4) << 9) | FMC_SDCMR_CTB2 | 4;
+    FMC_Bank5_6->SDCMR   = ((3 << 4 | 1) << 9) | FMC_SDCMR_CTB2 | 4;
     
     for(int i = 0;i < 25000;i++)    
         for(int j = 0;j < 300;j++);
