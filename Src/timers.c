@@ -44,18 +44,19 @@ void tim1_ch2_input_capture_init(void)
 void tim4_ch4_pwm_init(uint16_t wFirstHalf, uint16_t wSecondHalf)
 {
     // In frequency: Unknown    
-    RCC->APB1ENR |= RCC_APB1ENR_TIM4EN;
+    RCC->APB1ENR    |= RCC_APB1ENR_TIM4EN;
 
-    TIM4->CCMR2 |= TIM_CCMR2_OC4M_1 | TIM_CCMR2_OC4M_2; // PWM                          : [ mode1   ]
-    TIM4->CCMR2 |= TIM_CCMR2_OC4PE; // Preload register on CCR4     : [ enable  ]        
+    TIM4->CCMR2     |= TIM_CCMR2_OC4M_1 | TIM_CCMR2_OC4M_2;     // PWM                          : [ mode1   ]
+    TIM4->CCMR2     |= TIM_CCMR2_OC4PE;                         // Preload register on CCR4     : [ enable  ]        
 
-    TIM4->CCER |= TIM_CCER_CC4P; // OC4 active low (first half)  : [ enable  ]
-    TIM4->CCER |= TIM_CCER_CC4E; // Output                       : [ enable  ]
+    TIM4->CCER      |= TIM_CCER_CC4P;                           // OC4 active low (first half)  : [ enable  ]
+    TIM4->CCER      |= TIM_CCER_CC4E;                           // Output                       : [ enable  ]
 
-    TIM4->CR1 |= TIM_CR1_ARPE; // Auto-reload (ARR) preload    : [ enable  ]
-    TIM4->PSC = 0; // Frequency                    : [ Unknown ]
-    TIM4->ARR = wFirstHalf + wSecondHalf;
-    TIM4->CCR4 = wFirstHalf;
-    TIM4->EGR |= TIM_EGR_UG; // Обновить данные в регистрах
-    TIM4->SR &= ~TIM_SR_UIF; // Сбросить бит наступления переполнения
+    TIM4->CR1       |= TIM_CR1_ARPE;                            // Auto-reload (ARR) preload    : [ enable  ]
+    TIM4->PSC       = 0;                                        // Frequency                    : [ 266MHz  ]
+    TIM4->ARR       = wFirstHalf + wSecondHalf;
+    TIM4->CCR4      = wFirstHalf;
+    
+    TIM4->EGR       |= TIM_EGR_UG; // Обновить данные в регистрах
+    TIM4->SR        &=~TIM_SR_UIF; // Сбросить бит наступления переполнения
 }

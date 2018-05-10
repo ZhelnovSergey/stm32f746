@@ -13,13 +13,6 @@ void SystemClock_Config         (void);
 
 void dma_dcmi_init              (void);
 
-
-
-void fmc_sdram_init             (void);
-
-
-
-
 void usart_init                 (void);
 
  
@@ -39,36 +32,39 @@ unsigned int    Data  = 0;
 
 int main(void)
 {
-    HAL_Init();
+    HAL_Init            ();
+    SystemClock_Config  ();        
 
-    SystemClock_Config();        
 
-
+    // В таком порядке
+    gpio_init           ();
     
-    gpio_init       ();
-    sdram_init      ();
+    sdram_init          ();
     
+    dma_dcmi_init       ();
+    
+    dcmi_fcb_ex48ep_init();    
+    
+    
+/*  
+    // SDRAM TEST
     pData[0] = 0x12345678;
     Data     = pData[0];
-
     
     for( int i = 0;i < 100;i++ )
     {
         pData[ i ] = i;
         Data = pData[ i ];
     }
-    
-    
-    
-    
-    
+*/
+                
     while(1);
     
     
     
     
-    dma_dcmi_init   ();
-    dcmi_fcb_ex48ep_init();
+    
+    
     
 
     // for ov7725
@@ -116,33 +112,34 @@ int main(void)
 void dma_dcmi_init(void)
 {
     // DMA2 controller clock enable    
-    RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;
+    RCC->AHB1ENR        |= RCC_AHB1ENR_DMA2EN;
 
+    
     // Setup DMA2 Stream7 for DCMI CHANNEL1
-    DMA2_Stream7->CR &= ~DMA_SxCR_EN; // Выключить DMA
+    DMA2_Stream7->CR    &= ~DMA_SxCR_EN;    // Выключить DMA
     while (DMA2_Stream7->CR & DMA_SxCR_EN); // Убедиться что он выключен
 
-    DMA2_Stream7->PAR = (uint32_t) & DCMI->DR; // Source
-    DMA2_Stream7->M0AR = (uint32_t) & g_frame_buffer[g_frame_cnt]; // Destination
+    DMA2_Stream7->PAR    = (uint32_t) &DCMI->DR;                    // Source    
+  //DMA2_Stream7->M0AR   = (uint32_t) &g_frame_buffer[g_frame_cnt];
+    DMA2_Stream7->M0AR   = 0xD0000000;                              // Destination
 
-    DMA2_Stream7->CR |= DMA_CHANNEL_1;
-    DMA2_Stream7->NDTR = 65535;
-    DMA2_Stream7->CR |= DMA_NORMAL;  
+    DMA2_Stream7->CR    |= DMA_CHANNEL_1;
+    DMA2_Stream7->NDTR   = 65535;
+    DMA2_Stream7->CR    |= DMA_NORMAL;  
     
-    DMA2_Stream7->CR |= DMA_PRIORITY_LOW;
-    DMA2_Stream7->CR |= DMA_PERIPH_TO_MEMORY; // Memory to peripherial
-    DMA2_Stream7->CR |= DMA_PINC_DISABLE; // Peripheral increment mode disable
-    DMA2_Stream7->CR |= DMA_MINC_ENABLE; // Memory increment mode enable        
-    DMA2_Stream7->CR |= DMA_PBURST_INC4;
-    //DMA2_Stream7->CR |= DMA_PBURST_INC16;
+    DMA2_Stream7->CR    |= DMA_PRIORITY_LOW;
+    DMA2_Stream7->CR    |= DMA_PERIPH_TO_MEMORY;                       // Memory to peripherial
+    DMA2_Stream7->CR    |= DMA_PINC_DISABLE;                           // Peripheral increment mode disable
+    DMA2_Stream7->CR    |= DMA_MINC_ENABLE;                            // Memory increment mode enable        
+    DMA2_Stream7->CR    |= DMA_PBURST_INC4; /* DMA_PBURST_INC16 */
     
     
-    DMA2_Stream7->CR |= DMA_PDATAALIGN_WORD;
-    DMA2_Stream7->CR |= DMA_MDATAALIGN_WORD;
+    DMA2_Stream7->CR    |= DMA_PDATAALIGN_WORD;
+    DMA2_Stream7->CR    |= DMA_MDATAALIGN_WORD;
 
-    //DMA2_Stream7->FCR |= DMA_SxFCR_DMDIS; // Disable direct mode
+    DMA2_Stream7->FCR   |= DMA_SxFCR_DMDIS;                           // Disable direct mode
 
-    DMA2_Stream7->CR |= DMA_SxCR_EN;
+    DMA2_Stream7->CR    |= DMA_SxCR_EN;
 }
 
 
