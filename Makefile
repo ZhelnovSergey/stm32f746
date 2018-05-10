@@ -52,6 +52,7 @@ C_SOURCES =						    \
 Src/main.c						    \
 Src/dcmi.c						    \
 Src/gpio.c						    \
+Src/sdram.c						    \
 Src/stm32f7xx_it.c					    \
 Src/system_stm32f7xx.c					    \
 							    \

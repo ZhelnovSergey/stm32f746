@@ -263,16 +263,3 @@ void SystemCoreClockUpdate(void)
   /* HCLK frequency */
   SystemCoreClock >>= tmp;
 }
-
-/**
-  * @}
-  */
-
-/**
-  * @}
-  */
-  
-/**
-  * @}
-  */    
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
