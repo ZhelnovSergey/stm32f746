@@ -47,26 +47,31 @@ BUILD_DIR = build
 # source
 ######################################
 # C sources
-C_SOURCES =  \
-Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal.c \
-Src/stm32f7xx_hal_msp.c \
-Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_cortex.c \
-Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_tim_ex.c \
-Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_i2c_ex.c \
-Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_flash_ex.c \
-Src/main.c \
-Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_pwr_ex.c \
-Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_rcc_ex.c \
-Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dma_ex.c \
-Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_gpio.c \
-Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dma.c \
-Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_flash.c \
-Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_tim.c \
-Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_pwr.c \
-Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_i2c.c \
-Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_rcc.c \
-Src/stm32f7xx_it.c \
-Src/system_stm32f7xx.c  
+C_SOURCES =						    \
+							    \
+Src/main.c						    \
+Src/dcmi.c						    \
+Src/gpio.c						    \
+Src/stm32f7xx_it.c					    \
+Src/system_stm32f7xx.c					    \
+Src/stm32f7xx_hal_msp.c					    \
+							    \
+Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal.c	    \
+Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_cortex.c	    \
+Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_tim_ex.c	    \
+Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_i2c_ex.c	    \
+Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_flash_ex.c   \
+Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_pwr_ex.c	    \
+Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_rcc_ex.c	    \
+Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dma_ex.c	    \
+Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_gpio.c	    \
+Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dma.c	    \
+Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_flash.c	    \
+Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_tim.c	    \
+Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_pwr.c	    \
+Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_i2c.c	    \
+Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_rcc.c	    \
+
 
 # ASM sources
 ASM_SOURCES =  \
